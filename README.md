@@ -99,7 +99,7 @@ Il volume e il mute che mostrano altri progetti (es. G435-Companion) sono quelli
 
 ## Licenza
 
-[MIT](LICENSE): chiunque può usare, modificare e redistribuire il codice, anche per scopi commerciali, a patto di mantenere il file della licenza.
+[MIT](LICENSE): chiunque può usare, modificare e redistribuire il codice, anche per scopi commerciali, a patto di mantenere il file della licenza. Le parti derivate da altri progetti sono indicate in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
 
 ## Fonti
 

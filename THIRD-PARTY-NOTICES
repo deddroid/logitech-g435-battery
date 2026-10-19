@@ -1,0 +1,8 @@
+Third-party notices
+===================
+
+The 0x0ADF dongle protocol in src/device.rs and the voltage-to-percentage curve
+in src/protocol.rs are derived from portyporty/g435-battery-percentage:
+
+Copyright (c) 2026 Oğuz Kayra Bozkurt
+Licensed under the MIT License (same terms as above).
