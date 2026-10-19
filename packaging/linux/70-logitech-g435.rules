@@ -1,0 +1,4 @@
+# Logitech G435 LIGHTSPEED dongles: give the logged-in user access to the hidraw node.
+# Install: sudo cp 70-logitech-g435.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="0acb", TAG+="uaccess"
+KERNEL=="hidraw*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="0adf", TAG+="uaccess"
