@@ -1,40 +1,50 @@
 # g435-tray
 
-Icona nella tray con la batteria della cuffia **Logitech G435** tramite il dongle LIGHTSPEED.
-È scritta in Rust e gira su **Linux** (KDE in modo nativo, GNOME con l'estensione AppIndicator) e su **Windows**.
+🇬🇧 English · 🇮🇹 [Italiano](README.it.md)
 
-- L'icona mostra la percentuale ed è colorata in base al livello: verde, arancione (≤35%) o rosso (≤15%).
-- Il tooltip mostra `G435: 94% (4140 mV)`.
-- Menu: *Aggiorna ora*, *Avvio automatico*, *Esci*.
-- Legge la batteria ogni 15 minuti e, in caso di errore, riprova ogni minuto.
-- Su Linux le letture automatiche aspettano che la cuffia non stia riproducendo audio, per al massimo 30 minuti; nel frattempo l'icona mostra l'ultimo valore letto. La prima lettura all'avvio e *Aggiorna ora* leggono subito. Un gioco o un browser con l'audio aperto contano come "in uso" anche quando sono in silenzio.
-- Non usa G HUB né DLL Logitech e non fa traffico di rete.
+A tray icon showing the battery level of the **Logitech G435** headset through its LIGHTSPEED dongle.
+Written in Rust, it runs on **Linux** (natively on KDE, on GNOME with the AppIndicator extension) and on **Windows**.
 
-> Progetto non ufficiale e non affiliato a Logitech.
+- The icon shows the percentage and changes color with the level: green, orange (≤35%) or red (≤15%).
+- The tooltip shows `G435: 94% (4140 mV)`.
+- Menu: refresh now, start at login, quit.
+- Reads the battery every 15 minutes and retries every minute after an error.
+- On Linux, scheduled reads wait until the headset is not playing audio, for at most 30 minutes, and the icon keeps showing the last value in the meantime. The first read at startup and a manual refresh happen right away. A game or browser with an open audio stream counts as "playing" even when silent.
+- No G HUB, no Logitech DLLs, no network traffic.
 
-## Dongle supportati
+![KDE tray icon with the tooltip "G435: 92% (4122 mV)"](docs/screenshot.png)
 
-| PID | Revisione | Trasporto | Stato |
-|-----|-----------|-----------|-------|
-| `046d:0acb` | HDT647 (la più diffusa) | feature report 6 tramite il bridge Realtek ("bootloader") | **testato** |
-| `046d:0adf` | revisione più recente | report da 64 byte con CRC-16 | porting da [portyporty][porty], non testato |
+> Unofficial project, not affiliated with Logitech. The user interface is currently in Italian.
 
-Per sapere quale revisione hai: `lsusb | grep 046d` su Linux, oppure Gestione dispositivi su Windows.
+## Supported dongles
 
-## Compilazione
+| PID | Revision | Transport | Status |
+|-----|----------|-----------|--------|
+| `046d:0acb` | HDT647 (most common) | feature report 6 through the Realtek bridge ("bootloader") | **tested** |
+| `046d:0adf` | newer revision | 64-byte reports with CRC-16 | ported from [portyporty][porty], untested |
+
+To check which one you have: `lsusb | grep 046d` on Linux, or Device Manager on Windows.
+
+## Building
 
 ```bash
 cargo build --release
 ```
 
-L'eseguibile viene creato in `target/release/g435-tray` (su Windows `g435-tray.exe`).
+The binary ends up in `target/release/g435-tray` (`g435-tray.exe` on Windows).
 
-- **Linux**: servono `libudev` (pacchetto `systemd-libs` / `libudev-dev`) e `pkg-config`.
-- **Windows**: basta la toolchain Rust MSVC. hidapi usa il backend Rust nativo, quindi non serve un compilatore C.
+- **Linux**: needs `libudev` (package `systemd-libs` / `libudev-dev`) and `pkg-config`.
+- **Windows**: the Rust MSVC toolchain is enough. hidapi uses its native Rust backend, so no C compiler is needed.
 
-## Permessi (Linux)
+To install it for the current user (into `~/.cargo/bin`):
 
-Il programma deve poter aprire `/dev/hidrawN` del dongle. Se `g435-tray --once` risponde con un errore di permessi:
+```bash
+cargo install --path .
+```
+
+## Permissions (Linux)
+
+The program needs access to the dongle's `/dev/hidrawN`. If `g435-tray --once` fails with a permission error:
 
 ```bash
 sudo cp packaging/linux/70-logitech-g435.rules /etc/udev/rules.d/
@@ -44,68 +54,68 @@ sudo cp packaging/linux/70-logitech-g435.rules /etc/udev/rules.d/
 sudo udevadm control --reload && sudo udevadm trigger
 ```
 
-## Uso
+## Usage
 
 ```text
-g435-tray                 avvia l'icona nella tray
-g435-tray --once          stampa "94% (4140 mV)" ed esce (utile per script/waybar/polybar)
-g435-tray --interval 30   legge ogni 30 minuti
-G435_DEBUG=1 g435-tray --once   mostra il traffico HID
+g435-tray                 start the tray icon
+g435-tray --once          print "94% (4140 mV)" and exit (handy for scripts/waybar/polybar)
+g435-tray --interval 30   read every 30 minutes
+G435_DEBUG=1 g435-tray --once   dump the HID traffic
 ```
 
-## Note e limiti
+## Notes and limitations
 
-- **La percentuale è una stima** ricavata dalla tensione della batteria Li-Po (4,2 V = 100%, 3,4 V = 0%). Durante la ricarica la tensione sale e la stima risulta più alta del reale.
-- Sul `0acb` ogni lettura mette per un attimo il bridge USB in modalità "bootloader" e **l'audio si interrompe per circa un secondo**. Per questo il programma legge solo ogni 15 minuti e, su Linux, aspetta che l'audio sia fermo: controlla `/proc/asound/cardN/pcm*/sub*/status` della scheda USB della G435, e PipeWire chiude il dispositivo pochi secondi dopo la fine della riproduzione. Su Windows questo controllo non è ancora implementato.
-- Il comando di batteria raggiunge la cuffia solo se il dongle è in *remote mode* 1. Se non lo è, il programma lo imposta (è lo stesso valore che usa il tool ufficiale di pairing).
-- Se il dongle smette di rispondere (risponde agli ACK ma non restituisce dati), basta staccarlo e riattaccarlo.
+- **The percentage is an estimate** based on the Li-Po battery voltage (4.2 V = 100%, 3.4 V = 0%). While charging, the voltage rises and the estimate reads higher than the real charge.
+- On the `0acb` dongle every read briefly puts the USB bridge in "bootloader" mode, and **audio drops for about one second**. That's why the program reads only every 15 minutes and, on Linux, waits for the audio to stop. It checks `/proc/asound/cardN/pcm*/sub*/status` of the G435's USB sound card; PipeWire closes the device a few seconds after playback ends. This check is not implemented on Windows yet.
+- The battery command only reaches the headset when the dongle is in *remote mode* 1. If it isn't, the program sets it (the same value the official pairing tool uses).
+- If the dongle stops answering (it acknowledges commands but returns no data), unplug it and plug it back in.
 
-## Come funziona (protocollo)
+## How it works (protocol)
 
-Entrambi i dongle parlano con lo stesso SoC audio (Airoha/Audiowise) usando comandi `"PA"`:
+Both dongles talk to the same audio SoC (Airoha/Audiowise) using `"PA"` commands:
 
 ```text
-50 41 <categoria> <seq> <len> <comando...>     richiesta
-50 49 ...                                      risposta
+50 41 <category> <seq> <len> <command...>     request
+50 49 ...                                     reply
 ```
 
-| Comando | Byte | Risposta |
+| Command | Bytes | Reply |
 |---|---|---|
 | REMOTE_GET_CONNECT_STATUS | `0e .. 01 e3` | `02 00 e3 <0/1>` |
 | REMOTE_GET_MODE / SET_MODE | `0e .. 01 e0` / `0e .. 02 e1 01` | `02 00 e0 <mode>` |
 | GET_BATTERY | `06 .. 01 00 31` | `07 00 06 <seq\|80> 00 <mV lo> <mV hi> ..` |
 
-Sul `0acb` il trasporto è: entra nel bootloader con il feature report `06 01 03`, invia il comando con `06 04 03 <len> <cmd>` (ack `06 5a` sull'endpoint input), legge la risposta con GET_FEATURE sul report 6 ed esce con `06 08 03`.
+On the `0acb` the transport is: enter the bootloader with feature report `06 01 03`, send the command with `06 04 03 <len> <cmd>` (ack `06 5a` on the input endpoint), read the reply with GET_FEATURE on report 6, and leave with `06 08 03`.
 
-## Altre funzioni trovate (non ancora implementate)
+## Other features found (not implemented yet)
 
-Oltre alla batteria, la ricerca disponibile ha documentato questi comandi:
+Besides the battery, the available research documents these commands:
 
-- **Stato di connessione della cuffia** (accesa/spenta): funziona e il programma lo usa già per mostrare "cuffia spenta".
-- **RSSI / qualità del link radio** (`GET_RSSI`, `LQ_GET_QUALTY`): sono comandi candidati per un indicatore di segnale. Non sono verificati: durante i test il dongle si è bloccato subito dopo un `GET_RSSI` e un `OTA_CMD_ECHO`.
-- **Versione firmware** (`OTA_CMD_GET_IMAGE_VERSION`).
-- **LED** (`CMD_SET_LED`, `CMD_SET_LED_PWM`) e **EQ/DSP** (`EQ_ON_OFF`, `DSP_CMD_IIR_EQ`, ...): esistono nel firmware condiviso tra più prodotti, ma non è detto che abbiano effetto sulla G435.
-- **Pairing dongle ↔ cuffia** (scan e connect via MAC): è quello che fa il tool ufficiale di ri-associazione.
-- Comandi **pericolosi** da non usare: OTA/flash/NVDS (`ERASE_LOAD_REGION`, `OTA_CMD_UPDATE`, `AW_HA_CLEAR_NVDS`, ...).
+- **Headset connection status** (on/off): works, and the program already uses it to report "headset off".
+- **RSSI / radio link quality** (`GET_RSSI`, `LQ_GET_QUALTY`): candidates for a signal indicator. Unverified: during testing the dongle got stuck right after a `GET_RSSI` and an `OTA_CMD_ECHO`.
+- **Firmware version** (`OTA_CMD_GET_IMAGE_VERSION`).
+- **LEDs** (`CMD_SET_LED`, `CMD_SET_LED_PWM`) and **EQ/DSP** (`EQ_ON_OFF`, `DSP_CMD_IIR_EQ`, ...): present in firmware shared by several products, but they may have no effect on the G435.
+- **Dongle ↔ headset pairing** (scan and connect by MAC address): what the official re-pairing tool does.
+- **Dangerous** commands to stay away from: OTA/flash/NVDS (`ERASE_LOAD_REGION`, `OTA_CMD_UPDATE`, `AW_HA_CLEAR_NVDS`, ...).
 
-Nessuno ha ancora trovato comandi per il sidetone, per leggere il mute hardware o per sapere se la cuffia è in carica.
-Il volume e il mute che mostrano altri progetti (es. G435-Companion) sono quelli del sistema operativo, non della cuffia.
+Nobody has found commands for sidetone, reading the hardware mute, or detecting charging yet.
+The volume and mute shown by other projects (e.g. G435-Companion) belong to the operating system, not the headset.
 
-## Crediti
+## Credits
 
-- **[deddroid](https://github.com/deddroid)**: idea, test sull'hardware reale e scelte di progetto.
-- **Claude (Anthropic)**: ha scritto il codice in Rust, analizzato i progetti esistenti e verificato il protocollo sul dongle `0acb`, il tutto in una sessione di [Claude Code](https://claude.com/claude-code).
-- **endes** per il reverse engineering del dongle `0acb`, **portyporty** (Oğuz Kayra Bozkurt) per il protocollo del dongle `0adf`: vedi le fonti qui sotto.
+- **[deddroid](https://github.com/deddroid)**: idea, testing on real hardware and design decisions.
+- **Claude (Anthropic)**: wrote the Rust code, analyzed the existing projects and verified the protocol on the `0acb` dongle, all in a [Claude Code](https://claude.com/claude-code) session.
+- **endes** for reverse engineering the `0acb` dongle, **portyporty** (Oğuz Kayra Bozkurt) for the `0adf` dongle protocol: see the sources below.
 
-## Licenza
+## License
 
-[MIT](LICENSE): chiunque può usare, modificare e redistribuire il codice, anche per scopi commerciali, a patto di mantenere il file della licenza. Le parti derivate da altri progetti sono indicate in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
+[MIT](LICENSE): anyone can use, modify and redistribute the code, including commercially, as long as the license file is kept. Parts derived from other projects are listed in [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
 
-## Fonti
+## Sources
 
-- [endes — "USB HID down the rabbit hole: Logitech G435 dongle"](https://dev.to/endes/usb-hid-down-the-rabbit-hole-logitech-g435-dongle-33if) e il [gist con i comandi](https://gist.github.com/endes0/21193c55e2e38c9b3e3a95492380059c)
-- [portyporty/g435-battery-percentage][porty]: tray per Windows, dongle `0adf`, curva tensione→percentuale
-- [GotardoN1/G435-Companion](https://github.com/GotardoN1/G435-Companion): batteria via Bluetooth tramite le proprietà PnP di Windows
-- [CSaratakij/G435BatteryApproximate](https://github.com/CSaratakij/G435BatteryApproximate): stima basata sul tempo d'uso, nessuna lettura reale
+- [endes — "USB HID down the rabbit hole: Logitech G435 dongle"](https://dev.to/endes/usb-hid-down-the-rabbit-hole-logitech-g435-dongle-33if) and the [command list gist](https://gist.github.com/endes0/21193c55e2e38c9b3e3a95492380059c)
+- [portyporty/g435-battery-percentage][porty]: Windows tray app, `0adf` dongle, voltage→percentage curve
+- [GotardoN1/G435-Companion](https://github.com/GotardoN1/G435-Companion): Bluetooth battery through Windows PnP properties
+- [CSaratakij/G435BatteryApproximate](https://github.com/CSaratakij/G435BatteryApproximate): estimate based on usage time, no real reading
 
 [porty]: https://github.com/portyporty/g435-battery-percentage
