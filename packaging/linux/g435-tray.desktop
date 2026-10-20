@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=G435 Tray
+GenericName=Headset battery
+Comment=Battery level of the Logitech G435 headset in the system tray
+Comment[it]=Livello batteria della cuffia Logitech G435 nella tray
+Exec=g435-tray
+Icon=audio-headset
+Terminal=false
+Categories=Utility;
+Keywords=logitech;g435;headset;battery;
