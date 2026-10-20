@@ -12,7 +12,7 @@ provides=('g435-tray')
 conflicts=('g435-tray')
 options=('!lto')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('f91b35461f56d22950375c4714df3c60a742a0a0bab7408e1099b9e037546df6')
 
 prepare() {
   cd "$pkgname-$pkgver"
