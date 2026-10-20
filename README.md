@@ -25,6 +25,18 @@ Written in Rust, it runs on **Linux** (natively on KDE, on GNOME with the AppInd
 
 To check which one you have: `lsusb | grep 046d` on Linux, or Device Manager on Windows.
 
+## Installing
+
+**Arch Linux (AUR)**: [logitech-g435-battery](https://aur.archlinux.org/packages/logitech-g435-battery)
+
+```bash
+yay -S logitech-g435-battery
+```
+
+The package also installs the udev rule and a menu entry. Start **G435 Tray** from the application menu, then enable *start at login* from the tray icon menu.
+
+Other distributions and Windows: build from source (below).
+
 ## Building
 
 ```bash

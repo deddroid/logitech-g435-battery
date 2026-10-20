@@ -10,6 +10,7 @@ depends=('gcc-libs' 'glibc' 'systemd-libs')
 makedepends=('cargo')
 provides=('g435-tray')
 conflicts=('g435-tray')
+options=('!lto')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
 sha256sums=('SKIP')
 

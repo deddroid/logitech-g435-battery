@@ -25,6 +25,18 @@ Icona nella tray con la batteria della cuffia **Logitech G435** tramite il dongl
 
 Per sapere quale revisione hai: `lsusb | grep 046d` su Linux, oppure Gestione dispositivi su Windows.
 
+## Installazione
+
+**Arch Linux (AUR)**: [logitech-g435-battery](https://aur.archlinux.org/packages/logitech-g435-battery)
+
+```bash
+yay -S logitech-g435-battery
+```
+
+Il pacchetto installa anche la regola udev e una voce nel menu delle applicazioni. Avvia **G435 Tray** dal menu, poi attiva *Avvio automatico* dal menu dell'icona.
+
+Altre distribuzioni e Windows: compilazione dai sorgenti (qui sotto).
+
 ## Compilazione
 
 ```bash
