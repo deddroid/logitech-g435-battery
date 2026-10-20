@@ -27,15 +27,22 @@ To check which one you have: `lsusb | grep 046d` on Linux, or Device Manager on 
 
 ## Installing
 
-**Arch Linux (AUR)**: [logitech-g435-battery](https://aur.archlinux.org/packages/logitech-g435-battery)
+**Arch Linux (AUR)**: two packages, pick one:
+
+- [logitech-g435-battery-bin](https://aur.archlinux.org/packages/logitech-g435-battery-bin): prebuilt binary, installs in seconds.
+- [logitech-g435-battery](https://aur.archlinux.org/packages/logitech-g435-battery): compiled on your machine.
 
 ```bash
-yay -S logitech-g435-battery
+yay -S logitech-g435-battery-bin
 ```
 
-The package also installs the udev rule and a menu entry. Start **G435 Tray** from the application menu, then enable *start at login* from the tray icon menu.
+Both also install the udev rule and a menu entry. Start **G435 Tray** from the application menu, then enable *start at login* from the tray icon menu.
 
-Other distributions and Windows: build from source (below).
+**Other Linux distributions**: download `g435-tray-<version>-x86_64-linux.tar.gz` from the [latest release](https://github.com/deddroid/logitech-g435-battery/releases/latest), extract it and run `g435-tray`. If you get a permission error, install the included udev rule (see [Permissions](#permissions-linux)).
+
+**Windows**: download `g435-tray-<version>-x86_64-windows.zip` from the [latest release](https://github.com/deddroid/logitech-g435-battery/releases/latest), extract it and run `g435-tray.exe`. The Windows build is compiled and tested automatically, but it hasn't been tried on real Windows hardware yet: feedback is welcome.
+
+Every release also has a `SHA256SUMS` file to verify the downloads.
 
 ## Building
 
