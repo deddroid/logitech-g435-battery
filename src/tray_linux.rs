@@ -1,8 +1,8 @@
 //! StatusNotifierItem tray (KDE natively; GNOME needs the AppIndicator extension).
 
-use crate::{Status, autostart, icon, poll_loop};
+use crate::{Status, autostart, combo_labels, icon, poll_loop};
 use ksni::blocking::TrayMethods;
-use ksni::menu::{CheckmarkItem, StandardItem};
+use ksni::menu::{CheckmarkItem, StandardItem, SubMenu};
 use ksni::{Category, Icon, MenuItem, ToolTip};
 use std::sync::mpsc::{self, Sender};
 use std::time::Duration;
@@ -74,6 +74,15 @@ impl ksni::Tray for G435Tray {
                 ..Default::default()
             }
             .into(),
+            SubMenu {
+                label: "Combinazioni tasti".into(),
+                icon_name: "help-about".into(),
+                submenu: combo_labels()
+                    .map(|label| StandardItem { label, enabled: false, ..Default::default() }.into())
+                    .collect(),
+                ..Default::default()
+            }
+            .into(),
             MenuItem::Separator,
             StandardItem {
                 label: "Esci".into(),
@@ -87,6 +96,15 @@ impl ksni::Tray for G435Tray {
 }
 
 pub fn run(interval: Duration) {
+    // Re-checked periodically: the control goes back to 100% when the dongle
+    // is plugged in again.
+    std::thread::spawn(|| {
+        loop {
+            crate::audio::unblock_volume_up();
+            std::thread::sleep(Duration::from_secs(5));
+        }
+    });
+
     let (refresh_tx, refresh_rx) = mpsc::channel();
     let tray = G435Tray { status: Status::Pending, refresh: refresh_tx };
     let handle = match tray.spawn() {

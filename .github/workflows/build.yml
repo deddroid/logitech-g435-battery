@@ -35,9 +35,9 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref }}
 
-      - name: Install libudev
+      - name: Install libudev and ALSA headers
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev libasound2-dev pkg-config
 
       - uses: dtolnay/rust-toolchain@stable
         with:

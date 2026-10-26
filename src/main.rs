@@ -80,6 +80,24 @@ pub fn poll_loop(refresh: Receiver<()>, interval: Duration, on_update: impl Fn(S
     }
 }
 
+/// Headset-side functions from the G435 quick start guide. They are handled
+/// inside the headset and send nothing over USB, so the tray can only list them.
+pub const BUTTON_COMBOS: &[(&str, &str)] = &[
+    ("Mute microfono", "Mute, pressione breve"),
+    ("Sidetone on/off", "Mute, doppia pressione"),
+    ("Livello sidetone", "Mute + Volume +/−"),
+    ("Volume max 100 dB", "tieni Mute + Volume + per 3 s"),
+    ("Volume max 85 dB", "tieni Mute + Volume − per 3 s"),
+    ("Batteria sul LED", "Power, pressione breve"),
+    ("LIGHTSPEED ↔ Bluetooth", "tieni Mute per 3 s"),
+    ("Abbinamento Bluetooth", "tieni Power + Mute per 3 s"),
+    ("Accendi / spegni", "tieni Power 1,5 s / 3 s"),
+];
+
+pub fn combo_labels() -> impl Iterator<Item = String> {
+    BUTTON_COMBOS.iter().map(|(what, how)| format!("{what}: {how}"))
+}
+
 const USAGE: &str = "\
 g435-tray: icona nella tray con la batteria della Logitech G435 (LIGHTSPEED)
 

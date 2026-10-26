@@ -7,7 +7,8 @@ Written in Rust, it runs on **Linux** (natively on KDE, on GNOME with the AppInd
 
 - The icon shows the percentage and changes color with the level: green, orange (≤35%) or red (≤15%).
 - The tooltip shows `G435: 94% (4140 mV)`.
-- Menu: refresh now, start at login, quit.
+- Menu: refresh now, start at login, a cheat sheet of the headset button combinations, quit.
+- On Linux, makes the headset's Volume + button work (see [Headset buttons](#headset-buttons-linux)).
 - Reads the battery every 15 minutes and retries every minute after an error.
 - On Linux, scheduled reads wait until the headset is not playing audio, for at most 30 minutes, and the icon keeps showing the last value in the meantime. The first read at startup and a manual refresh happen right away. A game or browser with an open audio stream counts as "playing" even when silent.
 - No G HUB, no Logitech DLLs, no network traffic.
@@ -52,7 +53,7 @@ cargo build --release
 
 The binary ends up in `target/release/g435-tray` (`g435-tray.exe` on Windows).
 
-- **Linux**: needs `libudev` (package `systemd-libs` / `libudev-dev`) and `pkg-config`.
+- **Linux**: needs `libudev` (package `systemd-libs` / `libudev-dev`), ALSA (`alsa-lib` / `libasound2-dev`) and `pkg-config`.
 - **Windows**: the Rust MSVC toolchain is enough. hidapi uses its native Rust backend, so no C compiler is needed.
 
 To install it for the current user (into `~/.cargo/bin`):
@@ -89,6 +90,21 @@ G435_DEBUG=1 g435-tray --once   dump the HID traffic
 - The battery command only reaches the headset when the dongle is in *remote mode* 1. If it isn't, the program sets it (the same value the official pairing tool uses).
 - If the dongle stops answering (it acknowledges commands but returns no data), unplug it and plug it back in.
 
+## Headset buttons (Linux)
+
+Tested with input event captures and a raw `usbmon` trace of the dongle:
+
+| Button | Reaches the PC? | Result on Linux |
+|---|---|---|
+| Volume − | yes, HID `KEY_VOLUMEDOWN` | lowers the system volume |
+| Volume + | yes, HID `KEY_VOLUMEUP`, **only while the dongle's USB playback volume is below 100%** | raises the system volume |
+| Mute | **no**: no USB traffic at all, the mic is muted inside the headset | the system mic icon cannot follow it |
+| Power, combinations | no | handled inside the headset |
+
+- **Volume + does nothing (double beep)**: the dongle drops it while its hardware volume is at the maximum, as if the PC were already at 100%. PipeWire always leaves that control at 100% and scales in software. The tray app keeps it one step below the maximum (174/175, an inaudible −0.4 dB), so Volume + works. Manually: `amixer -c <card> cset name='G435 Wireless Gaming Headset Playback Volum' 174`.
+- **Volume keys ignored on KDE Plasma**: KDE lists the dongle's "Consumer Control" device as a mouse in *System Settings → Mouse & Touchpad*; if it gets disabled there, the volume keys stop working. Re-enable it there, or set `Enabled=true` in the `[Libinput][1133][2763][Logitech G series G435 Wireless Gaming Headset Consumer Control]` section of `~/.config/kcminputrc`.
+- The headset has no play button, no ANC and no transparency mode. Sidetone, the 85/100 dB volume limit and LIGHTSPEED/Bluetooth switching are only available through button combinations: the tray menu lists them under *Combinazioni tasti*.
+
 ## How it works (protocol)
 
 Both dongles talk to the same audio SoC (Airoha/Audiowise) using `"PA"` commands:
@@ -117,7 +133,7 @@ Besides the battery, the available research documents these commands:
 - **Dongle ↔ headset pairing** (scan and connect by MAC address): what the official re-pairing tool does.
 - **Dangerous** commands to stay away from: OTA/flash/NVDS (`ERASE_LOAD_REGION`, `OTA_CMD_UPDATE`, `AW_HA_CLEAR_NVDS`, ...).
 
-Nobody has found commands for sidetone, reading the hardware mute, or detecting charging yet.
+Nobody has found commands for sidetone, the volume limit, reading the hardware mute, or detecting charging yet. The mute and the button combinations produce no USB traffic at all (checked with `usbmon`).
 The volume and mute shown by other projects (e.g. G435-Companion) belong to the operating system, not the headset.
 
 ## Credits

@@ -1,10 +1,10 @@
 //! Notification-area icon via `tray-icon`, driven by a plain Win32 message loop.
 
-use crate::{Status, autostart, icon, poll_loop};
+use crate::{Status, autostart, combo_labels, icon, poll_loop};
 use std::sync::mpsc;
 use std::time::Duration;
 use std::{mem, ptr, thread};
-use tray_icon::menu::{CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem};
+use tray_icon::menu::{CheckMenuItem, IsMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem, Submenu};
 use tray_icon::{Icon, TrayIconBuilder};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, GetMessageW, MSG, SetTimer, TranslateMessage,
@@ -27,12 +27,16 @@ pub fn run(interval: Duration) {
     let refresh = MenuItem::new("Aggiorna ora", true, None);
     let startup = CheckMenuItem::new("Avvio automatico", true, autostart::is_enabled(), None);
     let quit = MenuItem::new("Esci", true, None);
+    let combos: Vec<MenuItem> = combo_labels().map(|label| MenuItem::new(label, false, None)).collect();
+    let combo_refs: Vec<&dyn IsMenuItem> = combos.iter().map(|i| i as &dyn IsMenuItem).collect();
+    let combos_menu = Submenu::with_items("Combinazioni tasti", true, &combo_refs).expect("menu");
     let menu = Menu::new();
     menu.append_items(&[
         &info,
         &PredefinedMenuItem::separator(),
         &refresh,
         &startup,
+        &combos_menu,
         &PredefinedMenuItem::separator(),
         &quit,
     ])

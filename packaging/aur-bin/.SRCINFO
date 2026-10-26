@@ -5,6 +5,7 @@ pkgbase = logitech-g435-battery-bin
 	url = https://github.com/deddroid/logitech-g435-battery
 	arch = x86_64
 	license = MIT
+	depends = alsa-lib
 	depends = gcc-libs
 	depends = glibc
 	depends = systemd-libs

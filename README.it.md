@@ -7,7 +7,8 @@ Icona nella tray con la batteria della cuffia **Logitech G435** tramite il dongl
 
 - L'icona mostra la percentuale ed è colorata in base al livello: verde, arancione (≤35%) o rosso (≤15%).
 - Il tooltip mostra `G435: 94% (4140 mV)`.
-- Menu: *Aggiorna ora*, *Avvio automatico*, *Esci*.
+- Menu: *Aggiorna ora*, *Avvio automatico*, un promemoria delle combinazioni di tasti della cuffia, *Esci*.
+- Su Linux fa funzionare il tasto Volume + della cuffia (vedi [Tasti della cuffia](#tasti-della-cuffia-linux)).
 - Legge la batteria ogni 15 minuti e, in caso di errore, riprova ogni minuto.
 - Su Linux le letture automatiche aspettano che la cuffia non stia riproducendo audio, per al massimo 30 minuti; nel frattempo l'icona mostra l'ultimo valore letto. La prima lettura all'avvio e *Aggiorna ora* leggono subito. Un gioco o un browser con l'audio aperto contano come "in uso" anche quando sono in silenzio.
 - Non usa G HUB né DLL Logitech e non fa traffico di rete.
@@ -52,7 +53,7 @@ cargo build --release
 
 L'eseguibile viene creato in `target/release/g435-tray` (su Windows `g435-tray.exe`).
 
-- **Linux**: servono `libudev` (pacchetto `systemd-libs` / `libudev-dev`) e `pkg-config`.
+- **Linux**: servono `libudev` (pacchetto `systemd-libs` / `libudev-dev`), ALSA (`alsa-lib` / `libasound2-dev`) e `pkg-config`.
 - **Windows**: basta la toolchain Rust MSVC. hidapi usa il backend Rust nativo, quindi non serve un compilatore C.
 
 Per installarlo per l'utente corrente (in `~/.cargo/bin`):
@@ -89,6 +90,21 @@ G435_DEBUG=1 g435-tray --once   mostra il traffico HID
 - Il comando di batteria raggiunge la cuffia solo se il dongle è in *remote mode* 1. Se non lo è, il programma lo imposta (è lo stesso valore che usa il tool ufficiale di pairing).
 - Se il dongle smette di rispondere (risponde agli ACK ma non restituisce dati), basta staccarlo e riattaccarlo.
 
+## Tasti della cuffia (Linux)
+
+Verificato catturando gli eventi di input e il traffico USB grezzo del dongle con `usbmon`:
+
+| Tasto | Arriva al PC? | Risultato su Linux |
+|---|---|---|
+| Volume − | sì, HID `KEY_VOLUMEDOWN` | abbassa il volume di sistema |
+| Volume + | sì, HID `KEY_VOLUMEUP`, **solo se il volume USB del dongle è sotto il 100%** | alza il volume di sistema |
+| Mute | **no**: nessun traffico USB, il microfono viene silenziato dentro la cuffia | l'icona del microfono di sistema non può seguirlo |
+| Power, combinazioni | no | gestiti dentro la cuffia |
+
+- **Volume + non fa niente (doppio bip)**: il dongle lo scarta quando il suo volume hardware è al massimo, come se il PC fosse già al 100%. PipeWire lascia sempre quel controllo al 100% e regola il volume via software. L'app lo tiene un gradino sotto il massimo (174/175, −0,4 dB, impercettibile), così Volume + funziona. A mano: `amixer -c <scheda> cset name='G435 Wireless Gaming Headset Playback Volum' 174`.
+- **Tasti volume ignorati su KDE Plasma**: KDE elenca il dispositivo "Consumer Control" del dongle come mouse in *Impostazioni di sistema → Mouse e touchpad*; se lì viene disattivato, i tasti volume smettono di funzionare. Riattivalo da lì, oppure metti `Enabled=true` nella sezione `[Libinput][1133][2763][Logitech G series G435 Wireless Gaming Headset Consumer Control]` di `~/.config/kcminputrc`.
+- La cuffia non ha tasto play, ANC o modalità trasparenza. Sidetone, limite di volume 85/100 dB e passaggio LIGHTSPEED/Bluetooth si usano solo con le combinazioni di tasti: il menu dell'icona le elenca sotto *Combinazioni tasti*.
+
 ## Come funziona (protocollo)
 
 Entrambi i dongle parlano con lo stesso SoC audio (Airoha/Audiowise) usando comandi `"PA"`:
@@ -117,7 +133,7 @@ Oltre alla batteria, la ricerca disponibile ha documentato questi comandi:
 - **Pairing dongle ↔ cuffia** (scan e connect via MAC): è quello che fa il tool ufficiale di ri-associazione.
 - Comandi **pericolosi** da non usare: OTA/flash/NVDS (`ERASE_LOAD_REGION`, `OTA_CMD_UPDATE`, `AW_HA_CLEAR_NVDS`, ...).
 
-Nessuno ha ancora trovato comandi per il sidetone, per leggere il mute hardware o per sapere se la cuffia è in carica.
+Nessuno ha ancora trovato comandi per il sidetone, il limite di volume, la lettura del mute hardware o lo stato di ricarica. Il mute e le combinazioni di tasti non generano alcun traffico USB (verificato con `usbmon`).
 Il volume e il mute che mostrano altri progetti (es. G435-Companion) sono quelli del sistema operativo, non della cuffia.
 
 ## Crediti
