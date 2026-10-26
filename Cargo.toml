@@ -1,6 +1,6 @@
 [package]
 name = "g435-tray"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Tray icon with the battery level of the Logitech G435 headset (Linux and Windows)"
 license = "MIT"
