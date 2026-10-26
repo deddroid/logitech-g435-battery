@@ -84,7 +84,7 @@ pub fn poll_loop(refresh: Receiver<()>, interval: Duration, on_update: impl Fn(S
 /// inside the headset and send nothing over USB, so the tray can only list them.
 pub const BUTTON_COMBOS: &[(&str, &str)] = &[
     ("Mute microfono", "Mute, pressione breve"),
-    ("Sidetone on/off", "Mute, doppia pressione"),
+    ("Sidetone (senti la tua voce) on/off", "Mute, doppia pressione"),
     ("Livello sidetone", "Mute + Volume +/−"),
     ("Volume max 100 dB", "tieni Mute + Volume + per 3 s"),
     ("Volume max 85 dB", "tieni Mute + Volume − per 3 s"),

@@ -53,6 +53,16 @@ impl ksni::Tray for G435Tray {
         vec![
             StandardItem { label: self.status.text(), enabled: false, ..Default::default() }.into(),
             MenuItem::Separator,
+            SubMenu {
+                label: "Comandi della cuffia".into(),
+                icon_name: "audio-headset".into(),
+                submenu: combo_labels()
+                    .map(|label| StandardItem { label, enabled: false, ..Default::default() }.into())
+                    .collect(),
+                ..Default::default()
+            }
+            .into(),
+            MenuItem::Separator,
             StandardItem {
                 label: "Aggiorna ora".into(),
                 icon_name: "view-refresh".into(),
@@ -71,15 +81,6 @@ impl ksni::Tray for G435Tray {
                         eprintln!("g435-tray: avvio automatico: {e}");
                     }
                 }),
-                ..Default::default()
-            }
-            .into(),
-            SubMenu {
-                label: "Combinazioni tasti".into(),
-                icon_name: "help-about".into(),
-                submenu: combo_labels()
-                    .map(|label| StandardItem { label, enabled: false, ..Default::default() }.into())
-                    .collect(),
                 ..Default::default()
             }
             .into(),

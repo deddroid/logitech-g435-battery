@@ -29,14 +29,15 @@ pub fn run(interval: Duration) {
     let quit = MenuItem::new("Esci", true, None);
     let combos: Vec<MenuItem> = combo_labels().map(|label| MenuItem::new(label, false, None)).collect();
     let combo_refs: Vec<&dyn IsMenuItem> = combos.iter().map(|i| i as &dyn IsMenuItem).collect();
-    let combos_menu = Submenu::with_items("Combinazioni tasti", true, &combo_refs).expect("menu");
+    let combos_menu = Submenu::with_items("Comandi della cuffia", true, &combo_refs).expect("menu");
     let menu = Menu::new();
     menu.append_items(&[
         &info,
         &PredefinedMenuItem::separator(),
+        &combos_menu,
+        &PredefinedMenuItem::separator(),
         &refresh,
         &startup,
-        &combos_menu,
         &PredefinedMenuItem::separator(),
         &quit,
     ])

@@ -103,7 +103,7 @@ Tested with input event captures and a raw `usbmon` trace of the dongle:
 
 - **Volume + does nothing (double beep)**: the dongle drops it while its hardware volume is at the maximum, as if the PC were already at 100%. PipeWire always leaves that control at 100% and scales in software. The tray app keeps it one step below the maximum (174/175, an inaudible −0.4 dB), so Volume + works. Manually: `amixer -c <card> cset name='G435 Wireless Gaming Headset Playback Volum' 174`.
 - **Volume keys ignored on KDE Plasma**: KDE lists the dongle's "Consumer Control" device as a mouse in *System Settings → Mouse & Touchpad*; if it gets disabled there, the volume keys stop working. Re-enable it there, or set `Enabled=true` in the `[Libinput][1133][2763][Logitech G series G435 Wireless Gaming Headset Consumer Control]` section of `~/.config/kcminputrc`.
-- The headset has no play button, no ANC and no transparency mode. Sidetone, the 85/100 dB volume limit and LIGHTSPEED/Bluetooth switching are only available through button combinations: the tray menu lists them under *Combinazioni tasti*.
+- The headset has no play button, no ANC and no transparency mode; the closest thing is sidetone, which plays your own voice back through the microphone. Sidetone, the 85/100 dB volume limit and LIGHTSPEED/Bluetooth switching are only available through button combinations: the tray menu lists them under *Comandi della cuffia*.
 
 ## How it works (protocol)
 
