@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-12
+
 ### Changed
 - On the `046d:0acb` dongle a battery read now sends two commands instead of three, so audio and microphone stop for about 1.5 s instead of about 1.9 s. The remote mode is set only when the battery reply is not a voltage.
 
@@ -14,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/PROTOCOL.md`: USB layout, bridge messages, measured cause and length of the audio interruption, and a known way to hang the dongle.
 
 ### Verified on hardware
-- Logitech G435 with the `046d:0acb` dongle, on Linux: new read sequence with audio and microphone streaming, including recovery from remote mode 0. Not tested with the headset switched off, nor on Windows.
+- Logitech G435 with the `046d:0acb` dongle, on Linux: new read sequence with audio and microphone streaming, including recovery from remote mode 0; tray left running for a few minutes with `--interval 1`, dongle still answering afterwards. Not tested with the headset switched off, nor on Windows.
 
 ## [0.2.0] - 2026-10-26
 
@@ -47,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Verified on hardware
 - Logitech G435 with the `046d:0acb` dongle, on Linux. Support for the `046d:0adf` dongle is ported from portyporty/g435-battery-percentage and untested; the Windows build compiles but has not been tried on real Windows.
 
-[Unreleased]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/deddroid/logitech-g435-battery/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/deddroid/logitech-g435-battery/releases/tag/v0.1.0
