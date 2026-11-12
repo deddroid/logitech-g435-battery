@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- On the `046d:0acb` dongle a battery read now sends two commands instead of three, so audio and microphone stop for about 1.5 s instead of about 1.9 s. The remote mode is set only when the battery reply is not a voltage.
+
+### Added
+- `docs/PROTOCOL.md`: USB layout, bridge messages, measured cause and length of the audio interruption, and a known way to hang the dongle.
+
+### Verified on hardware
+- Logitech G435 with the `046d:0acb` dongle, on Linux: new read sequence with audio and microphone streaming, including recovery from remote mode 0. Not tested with the headset switched off, nor on Windows.
+
 ## [0.2.0] - 2026-10-26
 
 ### Added
