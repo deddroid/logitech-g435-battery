@@ -53,18 +53,24 @@ pub fn adf_frame(cmd: u8, body: &[u8]) -> [u8; 64] {
     frame
 }
 
-/// Finds a GET_BATTERY reply in a raw buffer: `07 00 06 <seq|0x80> 00 mv_lo mv_hi`.
-/// Values outside a plausible Li-Po range are rejected: with the dongle in the
-/// wrong remote mode the same reply carries garbage.
-pub fn parse_battery_mv(buf: &[u8]) -> Option<u16> {
+/// Finds a GET_BATTERY reply in a raw buffer and returns its raw value:
+/// `07 00 06 <seq|0x80> 00 mv_lo mv_hi`.
+pub fn parse_battery_raw(buf: &[u8]) -> Option<u16> {
     buf.windows(7).find_map(|w| {
-        if w[0] == 0x07 && w[1] == 0x00 && w[2] == CAT_OTA && w[3] & 0x80 != 0 && w[4] == 0x00 {
-            let mv = u16::from_le_bytes([w[5], w[6]]);
-            (2500..=4600).contains(&mv).then_some(mv)
-        } else {
-            None
-        }
+        (w[0] == 0x07 && w[1] == 0x00 && w[2] == CAT_OTA && w[3] & 0x80 != 0 && w[4] == 0x00)
+            .then(|| u16::from_le_bytes([w[5], w[6]]))
     })
+}
+
+/// Whether a GET_BATTERY value is a Li-Po voltage. With the dongle in the
+/// wrong remote mode the same reply carries garbage (e.g. 210).
+pub fn is_battery_mv(mv: u16) -> bool {
+    (2500..=4600).contains(&mv)
+}
+
+/// A GET_BATTERY reply with a plausible headset voltage.
+pub fn parse_battery_mv(buf: &[u8]) -> Option<u16> {
+    parse_battery_raw(buf).filter(|&mv| is_battery_mv(mv))
 }
 
 /// Finds the value of a wireless-category "get" reply: `02 00 <cmd> <value>`.
@@ -130,6 +136,7 @@ mod tests {
         // Same reply with remote mode 0: not a headset voltage.
         let buf = hex("06504901c0d64300000700068200d2000000ffff");
         assert_eq!(parse_battery_mv(&buf), None);
+        assert_eq!(parse_battery_raw(&buf), Some(210));
     }
 
     #[test]

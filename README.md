@@ -86,7 +86,7 @@ G435_DEBUG=1 g435-tray --once   dump the HID traffic
 ## Notes and limitations
 
 - **The percentage is an estimate** based on the Li-Po battery voltage (4.2 V = 100%, 3.4 V = 0%). While charging, the voltage rises and the estimate reads higher than the real charge.
-- On the `0acb` dongle every read briefly puts the USB bridge in "bootloader" mode, and **audio drops for about one second**. That's why the program reads only every 15 minutes and, on Linux, waits for the audio to stop. It checks `/proc/asound/cardN/pcm*/sub*/status` of the G435's USB sound card; PipeWire closes the device a few seconds after playback ends. This check is not implemented on Windows yet.
+- On the `0acb` dongle every read puts the USB bridge in "bootloader" mode, and **audio and microphone stop for about 1.5 seconds**. This is a limit of the dongle firmware: no way to read the battery without the bootloader is known (measurements in [docs/PROTOCOL.md](docs/PROTOCOL.md)). That's why the program reads only every 15 minutes and, on Linux, waits for the audio to stop. It checks `/proc/asound/cardN/pcm*/sub*/status` of the G435's USB sound card; PipeWire closes the device a few seconds after playback ends. This check is not implemented on Windows yet.
 - The battery command only reaches the headset when the dongle is in *remote mode* 1. If it isn't, the program sets it (the same value the official pairing tool uses).
 - If the dongle stops answering (it acknowledges commands but returns no data), unplug it and plug it back in.
 
@@ -120,7 +120,7 @@ Both dongles talk to the same audio SoC (Airoha/Audiowise) using `"PA"` commands
 | REMOTE_GET_MODE / SET_MODE | `0e .. 01 e0` / `0e .. 02 e1 01` | `02 00 e0 <mode>` |
 | GET_BATTERY | `06 .. 01 00 31` | `07 00 06 <seq\|80> 00 <mV lo> <mV hi> ..` |
 
-On the `0acb` the transport is: enter the bootloader with feature report `06 01 03`, send the command with `06 04 03 <len> <cmd>` (ack `06 5a` on the input endpoint), read the reply with GET_FEATURE on report 6, and leave with `06 08 03`.
+On the `0acb` the transport is: enter the bootloader with feature report `06 01 03`, send the command with `06 04 03 <len> <cmd>` (ack `06 5a` on the input endpoint), read the reply with GET_FEATURE on report 6, and leave with `06 08 03`. Details, timings and a known way to hang the dongle are in [docs/PROTOCOL.md](docs/PROTOCOL.md).
 
 ## Other features found (not implemented yet)
 

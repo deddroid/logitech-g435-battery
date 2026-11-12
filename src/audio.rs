@@ -1,5 +1,5 @@
 //! The headset's USB sound card: whether it is streaming audio (battery reads
-//! drop audio for about a second on the 0x0ACB dongle, so they wait for
+//! stop audio and microphone for about 1.5 s on the 0x0ACB dongle, so they wait for
 //! silence) and the hardware volume quirk that blocks Volume+.
 
 #[cfg(target_os = "linux")]

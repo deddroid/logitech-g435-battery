@@ -171,6 +171,16 @@ mod acb {
             }
             Ok(None)
         }
+
+        /// GET_BATTERY, whatever value the reply carries.
+        fn battery_raw(&mut self) -> Result<Option<u16>> {
+            self.query(
+                CAT_OTA,
+                1,
+                &protocol::OTA_GET_BATTERY,
+                protocol::parse_battery_raw,
+            )
+        }
     }
 
     /// Sends a bridge message as a feature report and waits for its ACK on the
@@ -206,6 +216,10 @@ mod acb {
         Ok(())
     }
 
+    /// Audio and microphone stop for as long as the bridge stays in the
+    /// bootloader, and every command costs about 0.4 s there, so the usual
+    /// session is two commands. GET_BATTERY is never the first one: sent
+    /// first it has left the dongle answering nothing until replugged.
     pub fn read_millivolts(dev: &HidDevice) -> Result<u16> {
         let ack = bridge(dev, &ENTER_BOOTLOADER, &[])?;
         if ack != ACK_OK && ack != ACK_ALREADY {
@@ -224,25 +238,21 @@ mod acb {
             return Err(Error::HeadsetOff);
         }
 
-        // Remote mode 1 routes OTA commands to the headset; in mode 0 the
-        // dongle answers GET_BATTERY itself with a meaningless value.
-        let mode = s.query(CAT_WIRELESS, 1, &[protocol::REMOTE_GET_MODE], |b| {
-            protocol::parse_remote_value(b, protocol::REMOTE_GET_MODE)
-        })?;
-        if mode != Some(1) {
-            debug(|| format!("remote mode {mode:?}, switching to 1"));
-            s.query(CAT_WIRELESS, 2, &[protocol::REMOTE_SET_MODE, 0x01], |_| {
-                Some(())
-            })?;
+        let raw = s.battery_raw()?;
+        if let Some(mv) = raw.filter(|&mv| protocol::is_battery_mv(mv)) {
+            return Ok(mv);
         }
 
-        s.query(
-            CAT_OTA,
-            1,
-            &protocol::OTA_GET_BATTERY,
-            protocol::parse_battery_mv,
-        )?
-        .ok_or(Error::NoReply)
+        // Remote mode 1 routes OTA commands to the headset. In mode 0 the
+        // dongle answers GET_BATTERY itself with a meaningless value; it is
+        // in mode 0 after being plugged in and falls back to it at times.
+        debug(|| format!("battery reply {raw:?}, setting remote mode 1"));
+        s.query(CAT_WIRELESS, 2, &[protocol::REMOTE_SET_MODE, 0x01], |_| {
+            Some(())
+        })?;
+        s.battery_raw()?
+            .filter(|&mv| protocol::is_battery_mv(mv))
+            .ok_or(Error::NoReply)
     }
 }
 
