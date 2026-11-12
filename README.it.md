@@ -21,7 +21,7 @@ Icona nella tray con la batteria della cuffia **Logitech G435** tramite il dongl
 
 | PID | Revisione | Trasporto | Stato |
 |-----|-----------|-----------|-------|
-| `046d:0acb` | HDT647 (la più diffusa) | feature report 6 tramite il bridge Realtek ("bootloader") | **testato** |
+| `046d:0acb` | HDT647 (la più diffusa) | report 6 tramite il bridge Realtek ("bootloader") | **testato** |
 | `046d:0adf` | revisione più recente | report da 64 byte con CRC-16 | porting da [portyporty][porty], non testato |
 
 Per sapere quale revisione hai: `lsusb | grep 046d` su Linux, oppure Gestione dispositivi su Windows.
@@ -86,7 +86,7 @@ G435_DEBUG=1 g435-tray --once   mostra il traffico HID
 ## Note e limiti
 
 - **La percentuale è una stima** ricavata dalla tensione della batteria Li-Po (4,2 V = 100%, 3,4 V = 0%). Durante la ricarica la tensione sale e la stima risulta più alta del reale.
-- Sul `0acb` ogni lettura mette il bridge USB in modalità "bootloader" e **audio e microfono si fermano per circa 1,5 secondi**. È un limite del firmware del dongle: non si conosce un modo di leggere la batteria senza il bootloader (misure in [docs/PROTOCOL.md](docs/PROTOCOL.md)). Per questo il programma legge solo ogni 15 minuti e, su Linux, aspetta che l'audio sia fermo: controlla `/proc/asound/cardN/pcm*/sub*/status` della scheda USB della G435, e PipeWire chiude il dispositivo pochi secondi dopo la fine della riproduzione. Su Windows questo controllo non è ancora implementato.
+- Sul `0acb` ogni lettura mette il bridge USB in modalità "bootloader" e **audio e microfono si fermano per circa 0,6 secondi**. È un limite del firmware del dongle: non si conosce un modo di leggere la batteria senza il bootloader (misure in [docs/PROTOCOL.md](docs/PROTOCOL.md)). Per questo il programma legge solo ogni 15 minuti e, su Linux, aspetta che l'audio sia fermo: controlla `/proc/asound/cardN/pcm*/sub*/status` della scheda USB della G435, e PipeWire chiude il dispositivo pochi secondi dopo la fine della riproduzione. Su Windows questo controllo non è ancora implementato.
 - Il comando di batteria raggiunge la cuffia solo se il dongle è in *remote mode* 1. Se non lo è, il programma lo imposta (è lo stesso valore che usa il tool ufficiale di pairing).
 - Se il dongle smette di rispondere (risponde agli ACK ma non restituisce dati), basta staccarlo e riattaccarlo.
 
@@ -120,7 +120,7 @@ Entrambi i dongle parlano con lo stesso SoC audio (Airoha/Audiowise) usando coma
 | REMOTE_GET_MODE / SET_MODE | `0e .. 01 e0` / `0e .. 02 e1 01` | `02 00 e0 <mode>` |
 | GET_BATTERY | `06 .. 01 00 31` | `07 00 06 <seq\|80> 00 <mV lo> <mV hi> ..` |
 
-Sul `0acb` il trasporto è: entra nel bootloader con il feature report `06 01 03`, invia il comando con `06 04 03 <len> <cmd>` (ack `06 5a` sull'endpoint input), legge la risposta con GET_FEATURE sul report 6 ed esce con `06 08 03`. Dettagli, tempi e un modo noto di bloccare il dongle sono in [docs/PROTOCOL.md](docs/PROTOCOL.md) (in inglese).
+Sul `0acb` il trasporto è: entra nel bootloader con l'output report `06 01 03`, invia il comando con `06 04 03 <len lo> <len hi> <cmd>` (ack `06 5a` sull'endpoint input), legge la risposta con GET_FEATURE sul report 6 ed esce con `06 08 03`. Dettagli, tempi e un modo noto di bloccare il dongle sono in [docs/PROTOCOL.md](docs/PROTOCOL.md) (in inglese).
 
 ## Altre funzioni trovate (non ancora implementate)
 
