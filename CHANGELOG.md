@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-12
+
 ### Changed
 - On the `046d:0acb` dongle bridge messages are now sent the way Logitech's update tool sends them (514-byte output report, 16-bit command length). A battery read keeps the dongle in bootloader mode for about 0.2 s instead of 1.0 s, so audio and microphone stop for about 0.6 s instead of 1.5 s.
 
@@ -55,7 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Verified on hardware
 - Logitech G435 with the `046d:0acb` dongle, on Linux. Support for the `046d:0adf` dongle is ported from portyporty/g435-battery-percentage and untested; the Windows build compiles but has not been tried on real Windows.
 
-[Unreleased]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/deddroid/logitech-g435-battery/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/deddroid/logitech-g435-battery/releases/tag/v0.1.0
