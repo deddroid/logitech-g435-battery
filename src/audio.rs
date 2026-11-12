@@ -26,7 +26,9 @@ mod imp {
         // "state: ...". PipeWire/PulseAudio close the device after a few idle
         // seconds.
         cards().any(|card| {
-            let Ok(pcms) = fs::read_dir(card) else { return false };
+            let Ok(pcms) = fs::read_dir(card) else {
+                return false;
+            };
             pcms.flatten()
                 .filter(|p| p.file_name().to_string_lossy().starts_with("pcm"))
                 .filter_map(|p| fs::read_dir(p.path()).ok())
@@ -44,17 +46,27 @@ mod imp {
         use alsa::mixer::{Mixer, Selem, SelemChannelId};
 
         for card in cards() {
-            let Some(n) = card.file_name().and_then(|f| f.to_str()?.strip_prefix("card").map(str::to_owned)) else {
+            let Some(n) = card
+                .file_name()
+                .and_then(|f| f.to_str()?.strip_prefix("card").map(str::to_owned))
+            else {
                 continue;
             };
-            let Ok(mixer) = Mixer::new(&format!("hw:{n}"), false) else { continue };
+            let Ok(mixer) = Mixer::new(&format!("hw:{n}"), false) else {
+                continue;
+            };
             for selem in mixer.iter().filter_map(Selem::new) {
                 if !selem.has_playback_volume() {
                     continue;
                 }
                 let (_, max) = selem.get_playback_volume_range();
-                if selem.get_playback_volume(SelemChannelId::mono()).is_ok_and(|v| v >= max) {
-                    crate::device::debug(|| format!("hw:{n} playback volume at max, setting {}", max - 1));
+                if selem
+                    .get_playback_volume(SelemChannelId::mono())
+                    .is_ok_and(|v| v >= max)
+                {
+                    crate::device::debug(|| {
+                        format!("hw:{n} playback volume at max, setting {}", max - 1)
+                    });
                     let _ = selem.set_playback_volume_all(max - 1);
                 }
             }

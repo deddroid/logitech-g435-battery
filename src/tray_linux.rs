@@ -20,7 +20,11 @@ fn pixmap(size: usize, percent: Option<u8>) -> Icon {
         .iter()
         .flat_map(|p| [p[3], p[0], p[1], p[2]])
         .collect();
-    Icon { width: size as i32, height: size as i32, data }
+    Icon {
+        width: size as i32,
+        height: size as i32,
+        data,
+    }
 }
 
 impl ksni::Tray for G435Tray {
@@ -51,13 +55,25 @@ impl ksni::Tray for G435Tray {
 
     fn menu(&self) -> Vec<MenuItem<Self>> {
         vec![
-            StandardItem { label: self.status.text(), enabled: false, ..Default::default() }.into(),
+            StandardItem {
+                label: self.status.text(),
+                enabled: false,
+                ..Default::default()
+            }
+            .into(),
             MenuItem::Separator,
             SubMenu {
                 label: "Comandi della cuffia".into(),
                 icon_name: "audio-headset".into(),
                 submenu: combo_labels()
-                    .map(|label| StandardItem { label, enabled: false, ..Default::default() }.into())
+                    .map(|label| {
+                        StandardItem {
+                            label,
+                            enabled: false,
+                            ..Default::default()
+                        }
+                        .into()
+                    })
                     .collect(),
                 ..Default::default()
             }
@@ -107,7 +123,10 @@ pub fn run(interval: Duration) {
     });
 
     let (refresh_tx, refresh_rx) = mpsc::channel();
-    let tray = G435Tray { status: Status::Pending, refresh: refresh_tx };
+    let tray = G435Tray {
+        status: Status::Pending,
+        refresh: refresh_tx,
+    };
     let handle = match tray.spawn() {
         Ok(h) => h,
         Err(e) => crate::fail(&format!("impossibile creare l'icona nella tray: {e}")),

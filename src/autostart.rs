@@ -57,7 +57,15 @@ mod imp {
 
     fn open(access: u32) -> io::Result<HKEY> {
         let mut key: HKEY = ptr::null_mut();
-        let rc = unsafe { RegOpenKeyExW(HKEY_CURRENT_USER, wide(RUN_KEY).as_ptr(), 0, access, &mut key) };
+        let rc = unsafe {
+            RegOpenKeyExW(
+                HKEY_CURRENT_USER,
+                wide(RUN_KEY).as_ptr(),
+                0,
+                access,
+                &mut key,
+            )
+        };
         if rc != ERROR_SUCCESS {
             return Err(io::Error::from_raw_os_error(rc as i32));
         }
@@ -65,9 +73,18 @@ mod imp {
     }
 
     pub fn is_enabled() -> bool {
-        let Ok(key) = open(KEY_QUERY_VALUE) else { return false };
+        let Ok(key) = open(KEY_QUERY_VALUE) else {
+            return false;
+        };
         let rc = unsafe {
-            RegQueryValueExW(key, wide(VALUE).as_ptr(), ptr::null(), ptr::null_mut(), ptr::null_mut(), ptr::null_mut())
+            RegQueryValueExW(
+                key,
+                wide(VALUE).as_ptr(),
+                ptr::null(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            )
         };
         unsafe { RegCloseKey(key) };
         rc == ERROR_SUCCESS
@@ -78,7 +95,16 @@ mod imp {
         let name = wide(VALUE);
         let rc = if enabled {
             let cmd = wide(&format!("\"{}\"", env::current_exe()?.display()));
-            unsafe { RegSetValueExW(key, name.as_ptr(), 0, REG_SZ, cmd.as_ptr().cast(), (cmd.len() * 2) as u32) }
+            unsafe {
+                RegSetValueExW(
+                    key,
+                    name.as_ptr(),
+                    0,
+                    REG_SZ,
+                    cmd.as_ptr().cast(),
+                    (cmd.len() * 2) as u32,
+                )
+            }
         } else {
             unsafe { RegDeleteValueW(key, name.as_ptr()) }
         };

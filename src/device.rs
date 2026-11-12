@@ -78,7 +78,10 @@ impl Reader {
         } else {
             return Err(Error::NotFound);
         };
-        Ok(Reading { millivolts: mv, percent: protocol::millivolts_to_percent(mv) })
+        Ok(Reading {
+            millivolts: mv,
+            percent: protocol::millivolts_to_percent(mv),
+        })
     }
 }
 
@@ -211,9 +214,12 @@ mod acb {
         let mut s = Session { dev, seq: 1 };
         drain(dev)?;
 
-        let connected = s.query(CAT_WIRELESS, 1, &[protocol::REMOTE_GET_CONNECT_STATUS], |b| {
-            protocol::parse_remote_value(b, protocol::REMOTE_GET_CONNECT_STATUS)
-        })?;
+        let connected = s.query(
+            CAT_WIRELESS,
+            1,
+            &[protocol::REMOTE_GET_CONNECT_STATUS],
+            |b| protocol::parse_remote_value(b, protocol::REMOTE_GET_CONNECT_STATUS),
+        )?;
         if connected == Some(0) {
             return Err(Error::HeadsetOff);
         }
@@ -225,11 +231,18 @@ mod acb {
         })?;
         if mode != Some(1) {
             debug(|| format!("remote mode {mode:?}, switching to 1"));
-            s.query(CAT_WIRELESS, 2, &[protocol::REMOTE_SET_MODE, 0x01], |_| Some(()))?;
+            s.query(CAT_WIRELESS, 2, &[protocol::REMOTE_SET_MODE, 0x01], |_| {
+                Some(())
+            })?;
         }
 
-        s.query(CAT_OTA, 1, &protocol::OTA_GET_BATTERY, protocol::parse_battery_mv)?
-            .ok_or(Error::NoReply)
+        s.query(
+            CAT_OTA,
+            1,
+            &protocol::OTA_GET_BATTERY,
+            protocol::parse_battery_mv,
+        )?
+        .ok_or(Error::NoReply)
     }
 }
 
@@ -238,8 +251,8 @@ mod adf {
 
     // Session init captured by portyporty (OTA_CMD_IOCTL_READ_MAX_LEN, seq 1).
     const SESSION_INIT: [u8; 19] = [
-        0x50, 0x41, 0x06, 0x01, 0x0d, 0x00, 0x25, 0x34, 0x12, 0x5a, 0x5a, 0x01, 0x00, 0x00,
-        0x00, 0xf0, 0x00, 0x00, 0x00,
+        0x50, 0x41, 0x06, 0x01, 0x0d, 0x00, 0x25, 0x34, 0x12, 0x5a, 0x5a, 0x01, 0x00, 0x00, 0x00,
+        0xf0, 0x00, 0x00, 0x00,
     ];
 
     /// Writes a frame (no report IDs: prefix 0) and collects input reports for `wait`.
@@ -273,10 +286,31 @@ mod adf {
         transact(dev, &protocol::adf_frame(0x80, &SESSION_INIT), 450)?;
 
         let mut seq = 2;
-        transact(dev, &pa(&mut seq, CAT_WIRELESS, 1, &[protocol::REMOTE_GET_MODE]), 120)?;
-        transact(dev, &pa(&mut seq, CAT_WIRELESS, 2, &[protocol::REMOTE_SET_MODE, 0x01]), 120)?;
-        transact(dev, &pa(&mut seq, CAT_WIRELESS, 1, &[protocol::REMOTE_GET_MODE]), 120)?;
-        let replies = transact(dev, &pa(&mut seq, CAT_OTA, 1, &protocol::OTA_GET_BATTERY), 250)?;
+        transact(
+            dev,
+            &pa(&mut seq, CAT_WIRELESS, 1, &[protocol::REMOTE_GET_MODE]),
+            120,
+        )?;
+        transact(
+            dev,
+            &pa(
+                &mut seq,
+                CAT_WIRELESS,
+                2,
+                &[protocol::REMOTE_SET_MODE, 0x01],
+            ),
+            120,
+        )?;
+        transact(
+            dev,
+            &pa(&mut seq, CAT_WIRELESS, 1, &[protocol::REMOTE_GET_MODE]),
+            120,
+        )?;
+        let replies = transact(
+            dev,
+            &pa(&mut seq, CAT_OTA, 1, &protocol::OTA_GET_BATTERY),
+            250,
+        )?;
         let _ = transact(dev, &protocol::adf_frame(0x85, &[0x02]), 50);
 
         protocol::parse_battery_mv(&replies).ok_or(Error::NoReply)

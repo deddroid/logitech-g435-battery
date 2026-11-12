@@ -36,7 +36,10 @@ impl Canvas {
 pub fn render(size: usize, percent: Option<u8>) -> Vec<u8> {
     let s = size as f32 / 32.0;
     let u = |v: f32| (v * s).round() as usize;
-    let mut c = Canvas { size, px: vec![[0; 4]; size * size] };
+    let mut c = Canvas {
+        size,
+        px: vec![[0; 4]; size * size],
+    };
 
     let outline = [230, 230, 230, 255];
     let fill = match percent {
@@ -60,7 +63,12 @@ pub fn render(size: usize, percent: Option<u8>) -> Vec<u8> {
 
     // Text: up to 3 digits, scaled to fit inside the body, with a dark outline.
     let glyphs: Vec<usize> = match percent {
-        Some(p) => p.min(100).to_string().bytes().map(|b| (b - b'0') as usize).collect(),
+        Some(p) => p
+            .min(100)
+            .to_string()
+            .bytes()
+            .map(|b| (b - b'0') as usize)
+            .collect(),
         None => vec![QUESTION],
     };
     let px = (if glyphs.len() == 3 { 2.0 } else { 3.0 } * s).max(1.0) as usize;
@@ -77,7 +85,13 @@ pub fn render(size: usize, percent: Option<u8>) -> Vec<u8> {
                     let x = x0 + i * 4 * px + col * px;
                     let y = y0 + row * px;
                     if pass == 0 {
-                        c.rect(x.saturating_sub(1), y.saturating_sub(1), px + 2, px + 2, [0, 0, 0, 230]);
+                        c.rect(
+                            x.saturating_sub(1),
+                            y.saturating_sub(1),
+                            px + 2,
+                            px + 2,
+                            [0, 0, 0, 230],
+                        );
                     } else {
                         c.rect(x, y, px, px, [255, 255, 255, 255]);
                     }

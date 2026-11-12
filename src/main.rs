@@ -64,7 +64,11 @@ pub fn poll_loop(refresh: Receiver<()>, interval: Duration, on_update: impl Fn(S
                 Ok(r) => Status::Ok(r),
                 Err(e) => Status::Err(e.to_string()),
             };
-            let wait = if matches!(status, Status::Ok(_)) { interval } else { ERROR_RETRY.min(interval) };
+            let wait = if matches!(status, Status::Ok(_)) {
+                interval
+            } else {
+                ERROR_RETRY.min(interval)
+            };
             on_update(status);
             due = Instant::now() + wait;
             wait
@@ -84,7 +88,10 @@ pub fn poll_loop(refresh: Receiver<()>, interval: Duration, on_update: impl Fn(S
 /// inside the headset and send nothing over USB, so the tray can only list them.
 pub const BUTTON_COMBOS: &[(&str, &str)] = &[
     ("Mute microfono", "Mute, pressione breve"),
-    ("Sidetone (senti la tua voce) on/off", "Mute, doppia pressione"),
+    (
+        "Sidetone (senti la tua voce) on/off",
+        "Mute, doppia pressione",
+    ),
     ("Livello sidetone", "Mute + Volume +/−"),
     ("Volume max 100 dB", "tieni Mute + Volume + per 3 s"),
     ("Volume max 85 dB", "tieni Mute + Volume − per 3 s"),
@@ -95,7 +102,9 @@ pub const BUTTON_COMBOS: &[(&str, &str)] = &[
 ];
 
 pub fn combo_labels() -> impl Iterator<Item = String> {
-    BUTTON_COMBOS.iter().map(|(what, how)| format!("{what}: {how}"))
+    BUTTON_COMBOS
+        .iter()
+        .map(|(what, how)| format!("{what}: {how}"))
 }
 
 const USAGE: &str = "\

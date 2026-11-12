@@ -31,7 +31,11 @@ pub fn crc16_xmodem(data: &[u8]) -> u16 {
     for &byte in data {
         crc ^= (byte as u16) << 8;
         for _ in 0..8 {
-            crc = if crc & 0x8000 != 0 { (crc << 1) ^ 0x1021 } else { crc << 1 };
+            crc = if crc & 0x8000 != 0 {
+                (crc << 1) ^ 0x1021
+            } else {
+                crc << 1
+            };
         }
     }
     crc
@@ -73,9 +77,22 @@ pub fn parse_remote_value(buf: &[u8], cmd: u8) -> Option<u8> {
 /// Approximate state of charge from a resting Li-Po voltage.
 pub fn millivolts_to_percent(mv: u16) -> u8 {
     const CURVE: [(u16, u8); 16] = [
-        (4200, 100), (4150, 95), (4100, 90), (4050, 85), (4000, 80), (3950, 75),
-        (3900, 70), (3850, 62), (3800, 55), (3750, 45), (3700, 35), (3650, 25),
-        (3600, 15), (3550, 10), (3500, 5), (3400, 0),
+        (4200, 100),
+        (4150, 95),
+        (4100, 90),
+        (4050, 85),
+        (4000, 80),
+        (3950, 75),
+        (3900, 70),
+        (3850, 62),
+        (3800, 55),
+        (3750, 45),
+        (3700, 35),
+        (3650, 25),
+        (3600, 15),
+        (3550, 10),
+        (3500, 5),
+        (3400, 0),
     ];
     if mv >= CURVE[0].0 {
         return 100;
@@ -95,7 +112,10 @@ mod tests {
     use super::*;
 
     fn hex(s: &str) -> Vec<u8> {
-        (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap()).collect()
+        (0..s.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap())
+            .collect()
     }
 
     #[test]
