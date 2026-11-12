@@ -29,13 +29,26 @@ HID reports of interface 3:
 ## Bridge messages (report 6)
 
 The USB chip is a Realtek ALC4021; the radio SoC behind it is an
-Audiowise/Airoha PAU1823. Feature report 6 talks to the Realtek side:
+Audiowise/Airoha PAU1823. Report 6 talks to the Realtek side. Messages go out
+as the 514-byte **output** report (SET_REPORT Output), zero padded:
 
-| Feature report | Meaning | Reply on the input endpoint |
+| Output report | Meaning | Reply on the input endpoint |
 |---|---|---|
 | `06 01 03` | enter "bootloader" | `06 5a` (ok) or `06 fe` (already in) |
-| `06 04 03 <len> <cmd>` | pass `<cmd>` to the SoC | `06 5a` |
+| `06 04 03 <len lo> <len hi> <cmd>` | pass `<cmd>` to the SoC | `06 5a` |
 | `06 08 03` | leave "bootloader" | `06 5a` |
+
+This is the format of Logitech's own tool (*from G435Update 3.1.1.14,
+AWToolLIB2: `rtk_bootloader`, `rtk_write`, `rtk_read_RX`*), *measured* here
+on 7 sessions. That tool enters the bootloader when it connects and leaves
+only when it closes: it has no path to the SoC that avoids the bootloader, and
+it never uses report `0x34`.
+
+The same messages are also accepted as 64-byte **feature** reports with a
+one-byte length (`06 04 03 <len> <cmd>`), the format published by endes and
+used up to 0.2.1. It works, but each command then blocks for about 425 ms
+(14 ms as an output report), and GET_BATTERY sent first could hang the dongle
+(see below).
 
 SoC replies are read with GET_FEATURE on report 6. An empty buffer reads
 `06 ff ff …`. The last byte of a 64-byte feature report is the number of valid
@@ -55,15 +68,19 @@ dongle sends no unsolicited input reports apart from the volume keys
 | no bridge message | 0 | none |
 | enter, wait 2 s, leave (no command) | 2.00 s | about 2.0 s |
 | 0.2.0 sequence, three commands | 1.40 s | about 1.4 s |
-| current sequence, two commands | 0.98 s | about 1.0 s |
+| 0.2.1 sequence, two commands | 0.98 s | about 1.0 s |
+| current: two commands as output reports | 0.17 s | about 0.2 s |
 
 In every session about 0.45 s of digital silence follows the lost samples.
 
 * `06 01 03` alone stops the audio streams; they resume after `06 08 03`. It
   is the dongle firmware, not the host: no audio interface is claimed or
   detached.
-* Each `06 04 03` blocks for about 425 ms. Entering and leaving take 5–8 ms.
-  The length of the interruption is therefore set by the number of commands.
+* As feature reports each `06 04 03` blocks for about 425 ms; as output
+  reports about 14 ms, and the reply is ready about 30 ms later. Entering and
+  leaving take 5–15 ms.
+* The silence after leaving does not depend on the session: about 0.6 s of
+  interruption per read is the floor with this firmware.
 * Playback cannot be measured from the host (the isochronous OUT endpoint has
   no feedback). By ear it stops for the same time.
 
@@ -114,6 +131,10 @@ and left the dongle acknowledging every bridge message (`06 5a`) but returning
 no data, also to later sessions, until it was unplugged and plugged back in.
 Audio kept working. Sent after a category `0e` command in the same session,
 GET_BATTERY has never hung it. The exact cause is not isolated.
+
+All four attempts used the feature-report format. Whether the output-report
+format is immune has not been tested; the read sequence keeps GET_BATTERY
+second either way.
 
 Other commands from the same firmware family are listed in
 [endes' gist][gist]. `GET_RSSI` and `OTA_CMD_ECHO` were once followed by the

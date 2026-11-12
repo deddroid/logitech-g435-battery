@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- On the `046d:0acb` dongle bridge messages are now sent the way Logitech's update tool sends them (514-byte output report, 16-bit command length). A battery read keeps the dongle in bootloader mode for about 0.2 s instead of 1.0 s, so audio and microphone stop for about 0.6 s instead of 1.5 s.
+
+### Verified on hardware
+- Logitech G435 with the `046d:0acb` dongle, on Linux: new message format, 7 reads with audio and microphone streaming. Not tested on Windows, nor with the headset switched off.
+
 ## [0.2.1] - 2026-11-12
 
 ### Changed

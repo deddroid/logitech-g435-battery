@@ -116,7 +116,7 @@ Uso: g435-tray [opzioni]
   -h, --help        mostra questo aiuto
 
 Le letture automatiche aspettano che la cuffia non stia riproducendo audio
-(al massimo 30 minuti), perché ogni lettura ferma audio e microfono per circa 1,5 secondi.
+(al massimo 30 minuti), perché ogni lettura ferma audio e microfono per circa 0,6 secondi.
 
 Variabile G435_DEBUG=1 per stampare il traffico HID su stderr.";
 

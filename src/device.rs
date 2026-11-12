@@ -1,10 +1,10 @@
 //! HID transport for the two known G435 LIGHTSPEED dongle revisions.
 //!
 //! * `046d:0acb` (HDT647): vendor collection 0xFFC0, report 6. Commands go out
-//!   as feature reports through the Realtek bridge, which must be put in
+//!   as output reports through the Realtek bridge, which must be put in
 //!   "bootloader" mode first; replies are polled with GET_FEATURE.
-//!   Protocol from endes' research (dev.to "USB HID down the rabbit hole"),
-//!   verified on real hardware.
+//!   Protocol from endes' research (dev.to "USB HID down the rabbit hole")
+//!   and from Logitech's G435 update tool, verified on real hardware.
 //! * `046d:0adf`: vendor collection 0xFF00, plain 64-byte reports framed with a
 //!   CRC-16. Ported from portyporty/g435-battery-percentage (not verified here).
 
@@ -116,6 +116,11 @@ mod acb {
     const REPORT_ID: u8 = 6;
     // The feature report is 63 bytes + report ID; Windows rejects other sizes.
     const FEATURE_LEN: usize = 64;
+    // Bridge messages go out as the 514-byte output report, with a 16-bit
+    // command length, as Logitech's update tool sends them. Sent as feature
+    // reports with a one-byte length (as in 0.2.x) they also work, but every
+    // command then blocks for about 0.4 s with the audio stopped.
+    const OUTPUT_LEN: usize = 515;
     const ACK_OK: u8 = 0x5a;
     const ACK_ALREADY: u8 = 0xfe;
 
@@ -150,7 +155,7 @@ mod acb {
             let cmd = protocol::pa_command(category, self.seq, len, payload);
             self.seq = self.seq % 127 + 1;
 
-            let mut msg = vec![cmd.len() as u8];
+            let mut msg = (cmd.len() as u16).to_le_bytes().to_vec();
             msg.extend_from_slice(&cmd);
             bridge(self.dev, &SEND_COMMAND, &msg)?;
 
@@ -183,15 +188,15 @@ mod acb {
         }
     }
 
-    /// Sends a bridge message as a feature report and waits for its ACK on the
+    /// Sends a bridge message as an output report and waits for its ACK on the
     /// input endpoint (skipping volume-key reports that may be interleaved).
     fn bridge(dev: &HidDevice, op: &[u8; 2], body: &[u8]) -> Result<u8> {
-        let mut report = [0u8; FEATURE_LEN];
+        let mut report = [0u8; OUTPUT_LEN];
         report[0] = REPORT_ID;
         report[1..3].copy_from_slice(op);
         report[3..3 + body.len()].copy_from_slice(body);
         debug(|| format!("send {}", hex(&report[..3 + body.len()])));
-        dev.send_feature_report(&report)?;
+        dev.send_output_report(&report)?;
 
         let deadline = Instant::now() + Duration::from_millis(800);
         let mut buf = [0u8; 64];
