@@ -196,6 +196,13 @@ mod acb {
         report[1..3].copy_from_slice(op);
         report[3..3 + body.len()].copy_from_slice(body);
         debug(|| format!("send {}", hex(&report[..3 + body.len()])));
+        // hidapi 2.6's windows-native send_output_report() copies the data into
+        // a buffer sized for the feature report (64 bytes), so Windows rejects
+        // it with ERROR_INVALID_PARAMETER. write() uses the output report
+        // length there. Linux keeps the call verified on hardware.
+        #[cfg(windows)]
+        dev.write(&report)?;
+        #[cfg(not(windows))]
         dev.send_output_report(&report)?;
 
         let deadline = Instant::now() + Duration::from_millis(800);

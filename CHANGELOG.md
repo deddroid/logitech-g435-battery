@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Windows: every battery read on the `046d:0acb` dongle failed with "os error 87" since 0.2.2. hidapi's `send_output_report` truncates the 515-byte output report to the feature report length there, so on Windows the report is now sent with `write` ([#3](https://github.com/deddroid/logitech-g435-battery/issues/3)). Not yet tested on Windows hardware with the built binary.
+
 ## [0.2.2] - 2026-11-12
 
 ### Changed
