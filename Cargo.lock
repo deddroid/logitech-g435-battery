@@ -534,7 +534,7 @@ dependencies = [
 
 [[package]]
 name = "g435-tray"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "alsa",
  "hidapi",

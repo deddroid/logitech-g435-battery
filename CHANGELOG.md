@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-13
+
 ### Fixed
-- Windows: every battery read on the `046d:0acb` dongle failed with "os error 87" since 0.2.2. hidapi's `send_output_report` truncates the 515-byte output report to the feature report length there, so on Windows the report is now sent with `write` ([#3](https://github.com/deddroid/logitech-g435-battery/issues/3)). Not yet tested on Windows hardware with the built binary.
+- Windows: every battery read on the `046d:0acb` dongle failed with "os error 87" since 0.2.2. hidapi's `send_output_report` truncates the 515-byte output report to the feature report length there, so on Windows the report is now sent with `write` ([#3](https://github.com/deddroid/logitech-g435-battery/issues/3)).
+
+### Verified on hardware
+- Logitech G435 with the `046d:0acb` dongle, on Linux: one `--once` read with the binary built from this release (the Linux read path is unchanged since 0.2.2). The Windows fix has not been tested on Windows hardware with the built binary.
 
 ## [0.2.2] - 2026-11-12
 
@@ -60,7 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Verified on hardware
 - Logitech G435 with the `046d:0acb` dongle, on Linux. Support for the `046d:0adf` dongle is ported from portyporty/g435-battery-percentage and untested; the Windows build compiles but has not been tried on real Windows.
 
-[Unreleased]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/deddroid/logitech-g435-battery/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/deddroid/logitech-g435-battery/compare/v0.1.0...v0.2.0
